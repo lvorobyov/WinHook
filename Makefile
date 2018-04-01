@@ -2,7 +2,7 @@ TARGET = WinHook
 
 INCLUDES =
 DEFINES = -D_UNICODE -DUNICODE
-CFLAGS = -std=c++11 
+CFLAGS = -std=c++11
 CLFLAGS =
 ifdef DEBUG
   CFLAGS += -g
@@ -21,12 +21,12 @@ RESC = $(subst .rc,.res,$(RES))
 all: ${TARGET}
 
 ${TARGET}: ${OBJS} ${RESC}
-	g++ ${CLFLAGS} -mwindows -o $@ $^
+	g++ ${CLFLAGS} -mwindows -o $@ $^ -lshell32
 
 %.o: %.cpp ${HDRS}
 	g++ ${DEFINES} ${CFLAGS} ${INCLUDES} -c -o $@ $<
 
-%.res: %.rc resource.h
+%.res: %.rc resource.h item.ico
 	windres $< $@ -O coff
 
 run: ${TARGET}
