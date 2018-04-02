@@ -13,11 +13,15 @@
 //
 // Menu resources
 //
-LANGUAGE 25, SUBLANG_DEFAULT
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 IDR_TRAYMENU MENU
 {
     POPUP "Tray"
     {
+        MENUITEM "Подключится к процессу", IDM_ITEMATTACH
+        MENUITEM "Отключится от процесса", IDM_ITEMDETACH, GRAYED
+        MENUITEM "Настройки", IDM_ITEMSETTINGS
+        MENUITEM SEPARATOR
         MENUITEM "Выход", IDM_ITEMQUIT
     }
 }
@@ -27,5 +31,5 @@ IDR_TRAYMENU MENU
 //
 // Icon resources
 //
-LANGUAGE 0, SUBLANG_NEUTRAL
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDI_ICON1          ICON           ".\\item.ico"

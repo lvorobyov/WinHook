@@ -9,6 +9,7 @@
 #include <string.h>
 #include <tchar.h>
 #include "resource.h"
+#include "winhook.h"
 
 #define IDN_ICON     40050
 #define WM_SHALLICON (WM_APP + 1)
@@ -83,6 +84,14 @@ ATOM RegMyWindowClass(HINSTANCE hInst, LPCTSTR lpszClassName) {
     return RegisterClass(&wcWindowClass);
 }
 
+#define ENABLE_COMMAND(idCommand) \
+    EnableMenuItem(GetSubMenu(hMenu, 0), \
+        idCommand, MF_BYCOMMAND | MF_ENABLED);
+
+#define DISABLE_COMMAND(idCommand) \
+    EnableMenuItem(GetSubMenu(hMenu, 0), \
+        idCommand, MF_BYCOMMAND | MF_GRAYED);
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
                          WPARAM wParam, LPARAM lParam) {
     static HINSTANCE hInst;
@@ -90,6 +99,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	DWORD dwStatus;
 
     static NOTIFYICONDATA nid = { sizeof(NOTIFYICONDATA) };
+    static HMENU hMenu;
+    static BOOL isHook = FALSE;
 
 	switch (message) {
       case WM_CREATE:
@@ -97,6 +108,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
         hInst = (HINSTANCE) GetModuleHandle(NULL);
         if (! hInst)
             HANDLE_ERROR("GetModuleHandle",GetLastError());
+        hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAYMENU));
+        if (! hMenu)
+            HANDLE_ERROR("LoadMenu",GetLastError());
         // Notify initialization
         nid.hWnd = hWnd;
         nid.uID = IDN_ICON;
@@ -111,9 +125,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
       case WM_SHALLICON:
         if (wParam == IDN_ICON) {
             if ((UINT)lParam == WM_RBUTTONDOWN) {
-                HMENU hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_TRAYMENU));
-                if (! hMenu)
-                    HANDLE_ERROR("LoadMenu",GetLastError());
                 HMENU hPopup = GetSubMenu(hMenu, 0);
                 if (! hPopup)
                     HANDLE_ERROR("GetSubMenu",GetLastError());
@@ -121,7 +132,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
                 POINT pt;
                 GetCursorPos(&pt);
                 TrackPopupMenu(hPopup, TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
-                DestroyMenu(hMenu);
             }
         }
         break;
@@ -130,11 +140,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
           case IDM_ITEMQUIT:
             DestroyWindow(hWnd);
             break;
+          case IDM_ITEMATTACH:
+            // TODO: Search threadId
+            if (! SetKeyboardHook(NULL))
+                HANDLE_ERROR("SetWindowsHookEx",GetLastError());
+            isHook = TRUE;
+            ENABLE_COMMAND(IDM_ITEMDETACH);
+            DISABLE_COMMAND(IDM_ITEMATTACH);
+            break;
+          case IDM_ITEMDETACH:
+            if (! UnhookKeyboardHook())
+                HANDLE_ERROR("UnhookWindowsHookEx",GetLastError());
+            isHook = FALSE;
+            ENABLE_COMMAND(IDM_ITEMATTACH);
+            DISABLE_COMMAND(IDM_ITEMDETACH);
+            break;
+          case IDM_ITEMSETTINGS:
+            // TODO: Show settings
+            break;
 		}
 		break;
 	  case WM_DESTROY:
         Shell_NotifyIcon(NIM_DELETE, &nid);
+        if (isHook)
+            UnhookKeyboardHook();
         DestroyIcon(nid.hIcon);
+        DestroyMenu(hMenu);
         free(lpszBuffer);
 		PostQuitMessage(0);
 		break;
