@@ -18,12 +18,16 @@
 #define MSG_TITLE TEXT("WinHook")
 #define BUFFER_SIZE 512
 
+static
+void WinErrorHandle(HWND hWnd, LPTSTR lpszBuffer, LPCTSTR lpszFunctionName, DWORD dwStatus) {
+    _stprintf(lpszBuffer, TEXT("%s error.\nStatus code: %d"),
+        lpszFunctionName, dwStatus);
+    MessageBox(hWnd, lpszBuffer, MSG_TITLE, MB_OK | MB_ICONWARNING);
+    PostQuitMessage(0);
+}
+
 #define HANDLE_ERROR(lpszFunctionName, dwStatus) \
-{   \
-    _stprintf(lpszBuffer, TEXT("%s error.\nStatus code: %d"), \
-        TEXT(lpszFunctionName), dwStatus); \
-    MessageBox(hWnd, lpszBuffer, MSG_TITLE, MB_OK | MB_ICONWARNING); \
-    PostQuitMessage(0); \
+{   WinErrorHandle(hWnd, lpszBuffer, TEXT(lpszFunctionName), dwStatus); \
     break;  \
 }
 
