@@ -2,12 +2,13 @@ TARGET = WinHook
 
 INCLUDES =
 DEFINES = -D_UNICODE -DUNICODE
+LIBS = -lshell32 -lmsvcrt -lkernel32 -luser32
 CFLAGS = -std=c++11
-CLFLAGS =
+CLFLAGS = -nostdlib
 ifdef DEBUG
   CFLAGS += -g
 else
-  CFLAGS += -O
+  CFLAGS += -O2
   CLFLAGS += -s -Wl,--gc-sections
 endif
 
@@ -21,7 +22,7 @@ RESC = $(subst .rc,.res,$(RES))
 all: ${TARGET}
 
 ${TARGET}: ${OBJS} ${RESC}
-	g++ ${CLFLAGS} -mwindows -o $@ $^ -lshell32
+	g++ ${CLFLAGS} -mwindows -o $@ $^ ${LIBS}
 
 %.o: %.cpp ${HDRS}
 	g++ ${DEFINES} ${CFLAGS} ${INCLUDES} -c -o $@ $<
