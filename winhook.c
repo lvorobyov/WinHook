@@ -31,17 +31,42 @@ DLL_EI BOOL UnhookKeyboardHook() {
     return bStatus;
 }
 
+#define ST_CONTROL  1
+#define ST_SHIFT    2
+
 DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
-    if (code < 0) {
+    if (code < 0)
         return CallNextHookEx(hHook, code, wParam, lParam);
-    }
+
+    static BYTE bState = 0;
 
     switch (code) {
         case HC_ACTION:
-            if ((HIWORD(lParam) & KF_ALTDOWN) != 0) {
-                if (wParam == '1') {
-                    MessageBox(NULL, TEXT("Alt+1"), TEXT("WinHook"), MB_OK);
-                }
+            switch (wParam) {
+                case VK_CONTROL:
+                    if ((HIWORD(lParam) & KF_UP) != 0) {
+                        bState &= ~ST_CONTROL;
+                    } else {
+                        bState |= ST_CONTROL;
+                    }
+                    break;
+                case VK_SHIFT:
+                    if ((HIWORD(lParam) & KF_UP) != 0) {
+                        bState &= ~ST_SHIFT;
+                    } else {
+                        bState |= ST_SHIFT;
+                    }
+                    break;
+                case 'T':
+                    if ((HIWORD(lParam) & KF_UP) != 0 &&
+                        (bState & ST_SHIFT) != 0 &&
+                        (HIWORD(lParam) & KF_ALTDOWN) != 0) {
+                        ShellExecute(NULL,TEXT("open"),
+                            TEXT("https://www.multitran.ru/"),NULL,NULL,SW_SHOW);
+                    }
+                    break;
+                default:
+                    break;
             }
             break;
         default:
