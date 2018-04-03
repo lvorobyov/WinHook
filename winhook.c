@@ -31,8 +31,8 @@ DLL_EI BOOL UnhookKeyboardHook() {
     return bStatus;
 }
 
-#define ST_CONTROL  1
-#define ST_SHIFT    2
+#define ST_CONTROL  0x01
+#define ST_SHIFT    0x02
 
 DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
     if (code < 0)
@@ -58,11 +58,12 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
                     }
                     break;
                 case 'T':
-                    if ((HIWORD(lParam) & KF_UP) != 0 &&
-                        (bState & ST_SHIFT) != 0 &&
+                    if (bState == 0 &&
                         (HIWORD(lParam) & KF_ALTDOWN) != 0) {
-                        ShellExecute(NULL,TEXT("open"),
-                            TEXT("https://www.multitran.ru/"),NULL,NULL,SW_SHOW);
+                        if ((HIWORD(lParam) & KF_UP) != 0)
+                            ShellExecute(NULL,TEXT("open"),
+                                TEXT("https://www.multitran.ru/"),NULL,NULL,SW_SHOW);
+                        return 1;
                     }
                     break;
                 default:
