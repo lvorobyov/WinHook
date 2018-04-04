@@ -62,20 +62,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     return msg.wParam;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void WINAPI WinMainCRTStartup(void) {
-    HINSTANCE hInst = GetModuleHandle(NULL);
-    int res = WinMain(hInst, NULL, NULL, 0);
-    ExitProcess(res);
-}
-
-#ifdef __cplusplus
-}
-#endif
-
 ATOM RegMyWindowClass(HINSTANCE hInst, LPCTSTR lpszClassName) {
     WNDCLASS wcWindowClass = {0};
     wcWindowClass.lpfnWndProc = (WNDPROC)WndProc;
