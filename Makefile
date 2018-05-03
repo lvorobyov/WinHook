@@ -1,10 +1,15 @@
-TARGET = WinHook
+TARGET = WinHook.exe
 LIB = WinHook.dll
+
+ifeq (${CC},cc)
+  CC = gcc
+endif
+RM = swiss rm
 
 INCLUDES =
 DEFINES = -D_UNICODE -DUNICODE
 LIBS = -lshell32
-CFLAGS = -std=c++11
+CFLAGS = -std=c++14
 CCFLAGS = -std=c99
 CLFLAGS =
 ifdef DEBUG
@@ -34,16 +39,16 @@ RESC = $(subst .rc,.res,$(RES))
 all: ${LIB} ${TARGET}
 
 ${TARGET}: ${OBJS} ${RESC}
-	g++ ${CLFLAGS} -mwindows -o $@ $^ ${LIBS}
+	${CXX} ${CLFLAGS} -mwindows -o $@ $^ ${LIBS}
 
 ${LIB}: winhook.o
-	gcc ${CLFLAGS} -mwindows -shared -Wl,--out-implib,winhook.lib -o $@ $^
+	${CC} ${CLFLAGS} -mwindows -shared -Wl,--out-implib,winhook.lib -o $@ $^
 
 winhook.o: winhook.c winhook.h
-	gcc ${DEFINES} -DBUILD_DLL ${CCFLAGS} ${INCLUDES} -c -o $@ $<
+	${CC} ${DEFINES} -DBUILD_DLL ${CCFLAGS} ${INCLUDES} -c -o $@ $<
 
 %.o: %.cpp ${HDRS}
-	g++ ${DEFINES} ${CFLAGS} ${INCLUDES} -c -o $@ $<
+	${CXX} ${DEFINES} ${CFLAGS} ${INCLUDES} -c -o $@ $<
 
 %.res: %.rc resource.h item.ico
 	windres $< $@ -O coff
@@ -52,4 +57,4 @@ run: ${TARGET}
 	${TARGET}.exe
 
 clean:
-	swiss rm -f ${OBJS} ${RESC}
+	${RM} -f ${OBJS} ${RESC}
