@@ -6,6 +6,7 @@
  */
 
 #include "winhook.h"
+#include "autoscroll.h"
 
 static HHOOK hHook = NULL;
 static HANDLE hInstDll;
@@ -39,6 +40,7 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
         return CallNextHookEx(hHook, code, wParam, lParam);
 
     static BYTE bState = 0;
+	static UINT_PTR idAutoscrollTimer = NULL;
 
     switch (code) {
         case HC_ACTION:
@@ -63,6 +65,19 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
                         if ((HIWORD(lParam) & KF_UP) != 0)
                             ShellExecute(NULL,TEXT("open"),
                                 TEXT("https://www.multitran.ru/"),NULL,NULL,SW_SHOW);
+                        return 1;
+                    }
+                    break;
+				case VK_DOWN:
+                    if (bState == 0 &&
+                        (HIWORD(lParam) & KF_ALTDOWN) != 0) {
+                        if ((HIWORD(lParam) & KF_UP) != 0)
+							if (idAutoscrollTimer == 0) {
+                            	idAutoscrollTimer = SetAutoscrollTimer(100);
+							} else {
+								KillAutoscrollTimer(idAutoscrollTimer);
+								idAutoscrollTimer = 0;
+							}
                         return 1;
                     }
                     break;

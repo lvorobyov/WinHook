@@ -31,20 +31,21 @@ ifdef TINY
   OBJS += crt.o
 endif
 
-LIBS += -L. -lwinhook
-
 RES = $(wildcard *.rc)
 RESC = $(subst .rc,.res,$(RES))
 
 all: ${LIB} ${TARGET}
 
 ${TARGET}: ${OBJS} ${RESC}
-	${CXX} ${CLFLAGS} -mwindows -o $@ $^ ${LIBS}
+	${CXX} ${CLFLAGS} -mwindows -o $@ $^ ${LIBS} -L. -lwinhook
 
-${LIB}: winhook.o
-	${CC} ${CLFLAGS} -mwindows -shared -Wl,--out-implib,winhook.lib -o $@ $^
+${LIB}: $(subst .c,.o,$(wildcard *.c))
+	${CC} ${CLFLAGS} -mwindows -shared -Wl,--out-implib,winhook.lib -o $@ $^ ${LIBS}
 
 winhook.o: winhook.c winhook.h
+	${CC} ${DEFINES} -DBUILD_DLL ${CCFLAGS} ${INCLUDES} -c -o $@ $<
+
+autoscroll.o: autoscroll.c autoscroll.h
 	${CC} ${DEFINES} -DBUILD_DLL ${CCFLAGS} ${INCLUDES} -c -o $@ $<
 
 %.o: %.cpp ${HDRS}
@@ -53,8 +54,8 @@ winhook.o: winhook.c winhook.h
 %.res: %.rc resource.h item.ico
 	windres $< $@ -O coff
 
-run: ${TARGET}
-	${TARGET}.exe
+run: ${LIB} ${TARGET}
+	${TARGET}
 
 clean:
 	${RM} -f ${OBJS} ${RESC}
