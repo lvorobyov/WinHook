@@ -40,7 +40,7 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
         return CallNextHookEx(hHook, code, wParam, lParam);
 
     static BYTE bState = 0;
-	static UINT_PTR idAutoscrollTimer = NULL;
+	static UINT_PTR idAutoscrollTimer = 0;
 
     switch (code) {
         case HC_ACTION:
