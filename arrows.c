@@ -43,14 +43,14 @@ DWORD WINAPI StartTimerThreadProc(LPVOID lpParameter) {
     timer_ctx_t* ctx = lpParameter;
     write_log("started\n");
     do {
+        Sleep(400);
         PressKeyboardKey(wArrows[2]);
         Sleep(1500);
-        PressKeyboardKey(wArrows[3]);
-        Sleep(800);
-        PressKeyboardKey(wArrows[0]);
-        Sleep(2500);
         PressKeyboardKey(wArrows[1]);
-        Sleep(800);
+        Sleep(400);
+        PressKeyboardKey(wArrows[0]);
+        Sleep(2700);
+        PressKeyboardKey(wArrows[3]);
     } while (ctx->active);
     return 0;
 }
