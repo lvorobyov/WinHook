@@ -9,11 +9,16 @@ static WORD* ptr, *tmp;
 static HANDLE log_file;
 
 static
+DWORD __scan_bytes(void* data, int value) {
+    DWORD count = 80;
+    asm("repne scasb": "+c"(count), "+D"(data): "a"(value): "cc");
+    return 80 - count;
+}
+
+static
 void write_log(const char* msg) {
     DWORD written;
-    DWORD count = 80;
-    asm("repne scasb": "+c"(count), "+D"(msg): "a"(0): "cc");
-    count = 80 - count;
+    DWORD count = __scan_bytes((LPVOID)msg, 0) - 1;
     WriteFile(log_file, msg, count, &written, NULL);
 }
 
@@ -63,7 +68,9 @@ void StartTyping(timer_ctx_t *ctx, WORD wKeyCode) {
     }
     ptr = &wArrows[0];
     if (ctx->timer1 == 0) {
-        CreateThread(NULL, 0, StartTimerThreadProc, (LPVOID)ctx, 0, NULL);
+        DWORD thread_id;
+        if (NULL == CreateThread(NULL, 0, StartTimerThreadProc, (LPVOID)ctx, 0, &thread_id))
+            write_log("error: CreateThread");
     }
 }
 
