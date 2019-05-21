@@ -3,11 +3,19 @@
 //
 
 #include "arrows.h"
-#include <stdio.h>
 
 static WORD wArrows[4];
 static WORD* ptr, *tmp;
-static FILE* log_file;
+static HANDLE log_file;
+
+static
+void write_log(const char* msg) {
+    DWORD written;
+    DWORD count = 80;
+    asm("repne scasb": "+c"(count), "+D"(msg): "a"(0): "cc");
+    count = 80 - count;
+    WriteFile(log_file, msg, count, &written, NULL);
+}
 
 static
 void __store_bytes(void* data, int value, size_t count) {
@@ -29,21 +37,21 @@ void CALLBACK ArrowsTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
     inputs[3].ki.wVk = ptr[1];
     inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(4, inputs, sizeof(INPUT));
-    fprintf(log_file, "sent");
+    write_log("sent\n");
     WORD *temp = ptr;
     ptr = tmp;
     tmp = temp;
 }
 
 DWORD WINAPI StartTimerThreadProc(LPVOID lpParameter) {
-    log_file = fopen("winhook.log", "a+");
+    log_file = CreateFileA("winhook.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, 0, NULL);
     timer_ctx_t* ctx = lpParameter;
     if ((ctx->timer1 = SetTimer(NULL, 0, 2800, (TIMERPROC) ArrowsTimerProc)) == 0)
-        fprintf(log_file, "error: SetTimer");
+        write_log("error: SetTimer\n");
     Sleep(1000);
     if ((ctx->timer2 = SetTimer(NULL, 0, 2800, (TIMERPROC) ArrowsTimerProc)) == 0)
-        fprintf(log_file, "error: SetTimer");
-    fprintf(log_file, "started");
+        write_log("error: SetTimer\n");
+    write_log("started\n");
     return 0;
 }
 
@@ -62,6 +70,6 @@ void StartTyping(timer_ctx_t *ctx, WORD wKeyCode) {
 void StopTyping(timer_ctx_t *ctx) {
     KillTimer(NULL, ctx->timer1);
     KillTimer(NULL, ctx->timer2);
-    fprintf(log_file, "stopped");
-    fclose(log_file);
+    write_log("stopped\n");
+    CloseHandle(log_file);
 }
