@@ -45,11 +45,11 @@ DWORD WINAPI StartTimerThreadProc(LPVOID lpParameter) {
     do {
         Sleep(400);
         PressKeyboardKey(wArrows[2]);
-        Sleep(1500);
+        Sleep(2000);
         PressKeyboardKey(wArrows[1]);
         Sleep(400);
         PressKeyboardKey(wArrows[0]);
-        Sleep(2700);
+        Sleep(3700);
         PressKeyboardKey(wArrows[3]);
     } while (ctx->active);
     return 0;
