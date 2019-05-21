@@ -41,16 +41,14 @@ void PressKeyboardKey(WORD wKeyCode) {
 DWORD WINAPI StartTimerThreadProc(LPVOID lpParameter) {
     log_file = CreateFileA("winhook.log", GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, 0, NULL);
     timer_ctx_t* ctx = lpParameter;
+    DWORD dwTimeouts[4] = { 400, 2000, 400, 3700 };
+    int index = 2;
     write_log("started\n");
     do {
-        Sleep(400);
-        PressKeyboardKey(wArrows[2]);
-        Sleep(2000);
-        PressKeyboardKey(wArrows[1]);
-        Sleep(400);
-        PressKeyboardKey(wArrows[0]);
-        Sleep(3700);
-        PressKeyboardKey(wArrows[3]);
+        Sleep(dwTimeouts[index]);
+        PressKeyboardKey(wArrows[index]);
+        if (index -- < 0)
+            index = 3;
     } while (ctx->active);
     return 0;
 }
