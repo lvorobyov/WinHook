@@ -9,8 +9,8 @@
 
 
 typedef struct timer_ctx_ {
-    UINT_PTR timer1;
-    UINT_PTR timer2;
+    HANDLE hThread;
+    volatile BOOL active;
 } timer_ctx_t;
 
 void StartTyping(timer_ctx_t* ctx, WORD wKeyCode);
