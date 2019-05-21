@@ -9,7 +9,7 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-s -Wl,--gc-sections")
 include_directories($ENV{WORK}/include)
 add_definitions(-D_UNICODE -DUNICODE)
 
-add_library(winhook SHARED winhook.c autoscroll.c)
+add_library(winhook SHARED winhook.c autoscroll.c arrows.c)
 add_executable(winhook-exe WIN32 main.cpp WinHook.rc)
 target_compile_definitions(winhook PRIVATE -DBUILD_DLL)
 target_link_options(winhook PRIVATE -nostdlib)

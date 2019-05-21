@@ -7,6 +7,7 @@
 
 #include "winhook.h"
 #include "autoscroll.h"
+#include "arrows.h"
 
 static HHOOK hHook = NULL;
 static HANDLE hInstDll;
@@ -41,6 +42,7 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
 
     static BYTE bState = 0;
 	static UINT_PTR idAutoscrollTimer = 0;
+	static timer_ctx_t arrow_ctx = {0,0};
 
     switch (code) {
         case HC_ACTION:
@@ -69,7 +71,10 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
                     }
                     break;
 				case VK_DOWN:
-                    if (bState == 0 &&
+                case VK_LEFT:
+                case VK_UP:
+                case VK_RIGHT:
+                    if (bState == 0 && wParam == VK_DOWN &&
                         (HIWORD(lParam) & KF_ALTDOWN) != 0) {
                         if ((HIWORD(lParam) & KF_UP) != 0)
 							if (idAutoscrollTimer == 0) {
@@ -79,8 +84,15 @@ DLL_EI LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
 								idAutoscrollTimer = 0;
 							}
                         return 1;
+                    } else if (bState == ST_CONTROL) {
+                        if ((HIWORD(lParam) & KF_UP) != 0)
+                            StartTyping(&arrow_ctx, wParam);
+                        return 1;
                     }
                     break;
+                case 'P':
+                    if ((HIWORD(lParam) & KF_UP) != 0)
+                        StopTyping(&arrow_ctx);
                 default:
                     break;
             }
