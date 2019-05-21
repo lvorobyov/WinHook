@@ -3,9 +3,11 @@
 //
 
 #include "arrows.h"
+#include <stdio.h>
 
 static WORD wArrows[4];
 static WORD* ptr, *tmp;
+static FILE* log_file;
 
 static
 void __store_bytes(void* data, int value, size_t count) {
@@ -27,16 +29,21 @@ void CALLBACK ArrowsTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
     inputs[3].ki.wVk = ptr[1];
     inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(4, inputs, sizeof(INPUT));
+    fprintf(log_file, "sent");
     WORD *temp = ptr;
     ptr = tmp;
     tmp = temp;
 }
 
 DWORD WINAPI StartTimerThreadProc(LPVOID lpParameter) {
+    log_file = fopen("winhook.log", "a+");
     timer_ctx_t* ctx = lpParameter;
-    ctx->timer1 = SetTimer(NULL, 0, 2800, (TIMERPROC) ArrowsTimerProc);
+    if ((ctx->timer1 = SetTimer(NULL, 0, 2800, (TIMERPROC) ArrowsTimerProc)) == 0)
+        fprintf(log_file, "error: SetTimer");
     Sleep(1000);
-    ctx->timer2 = SetTimer(NULL, 0, 2800, (TIMERPROC) ArrowsTimerProc);
+    if ((ctx->timer2 = SetTimer(NULL, 0, 2800, (TIMERPROC) ArrowsTimerProc)) == 0)
+        fprintf(log_file, "error: SetTimer");
+    fprintf(log_file, "started");
     return 0;
 }
 
@@ -55,4 +62,6 @@ void StartTyping(timer_ctx_t *ctx, WORD wKeyCode) {
 void StopTyping(timer_ctx_t *ctx) {
     KillTimer(NULL, ctx->timer1);
     KillTimer(NULL, ctx->timer2);
+    fprintf(log_file, "stopped");
+    fclose(log_file);
 }
